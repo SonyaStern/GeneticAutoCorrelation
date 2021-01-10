@@ -1,8 +1,9 @@
 import logging
+import numpy as np
 import matplotlib.pyplot as plt
 from random import random, randint
 
-N = 37
+N = 30
 P = 10
 PSL_MAX = 3
 K = 3
@@ -40,8 +41,9 @@ def generate_population():
                 temp_array.append(-1)
             else:
                 temp_array.append(1)
-            # if not population.__contains__(temp_array):
-        population.append(temp_array)
+        if not population.__contains__(temp_array):
+            population.append(temp_array)
+        # np_array = np.array(temp_array)
     logging.info("Generation size: %d", len(population))
     return population
 
@@ -57,7 +59,7 @@ def make_pairs(parents):
         second_parent = temp_parents.pop(randomizer)
         b = random()
         if b < Pk:
-            pairs.append(Pair(first_parent, second_parent))
+            pairs.append([first_parent, second_parent])
     logging.info("Pairs size: %d", len(pairs))
     logging.info("=========== PARENTS AFTER PARING ============ ")
     for i in range(len(parents)):
@@ -76,18 +78,18 @@ def crossover(population):
 
     logging.info("=========== PAIRS BEFORE CROSSOVER ============ ")
     for i in range(len(parents)):
-        logging.info("PSL ======================= %d", fitness_function(parents[i].first_parent))
-        logging.info("PSL ======================= %d", fitness_function(parents[i].second_parent))
+        logging.info("PSL ======================= %d", fitness_function(parents[i][0]))
+        logging.info("PSL ======================= %d", fitness_function(parents[i][1]))
     logging.info("=========== THE END ============ ")
     # TODO: FIX IT
     children_list = list()
     for i in range(len(parents)):
-        first_child = parents[i].first_parent
-        second_child = parents[i].second_parent
+        first_child = parents[i][0][:]
+        second_child = parents[i][1][:]
         randomizer = randint(0, N - 1)
         for j in range(randomizer, N):
-            first_child[j] = parents[i].second_parent[j]
-            second_child[j] = parents[i].first_parent[j]
+            first_child[j] = parents[i][1][j]
+            second_child[j] = parents[i][0][j]
         children_list.append(first_child)
         children_list.append(second_child)
     logging.info("Children size: %d", len(children_list))
@@ -96,23 +98,34 @@ def crossover(population):
     for i in range(len(population)):
         logging.info("PSL ======================= %d", fitness_function(population[i]))
     logging.info("=========== THE END ============ ")
+
+    logging.info("=========== PAIRS AFTER CROSSOVER ============ ")
+    for i in range(len(parents)):
+        logging.info("PSL ======================= %d", fitness_function(parents[i][0]))
+        logging.info("PSL ======================= %d", fitness_function(parents[i][1]))
+    logging.info("=========== THE END ============ ")
     return children_list
 
 
 # Мутация детей
 def mutate(children_array):
+    # children_array = trim_array(children_array)
     for i in range(len(children_array)):
         if random() < Pm:
             index = randint(0, N - 1)
-            children_array[i][index] = -children_array[i][index]
-            logging.info("Child with index %d and element %d was %d and now it's %d", i, index, -children_array[i][index], children_array[i][index])
+            temp_child = children_array[i][:]
+            # temp_child[index] = -temp_child[index]
+            # children_array.pop(i)
+            # children_array.append(temp_child)
+            children_array[i][index] = -temp_child[index]
+            logging.info("Child with id %d and index %d was %d and now it's %d", i, index, -temp_child[index], temp_child[index])
     return children_array
 
 
 # Отбор лучших детей и родителей в следующее поколение методом турнира
 def tournament(population):
     next_population = list()
-    best_of_the_best = dict()
+    best_of_the_best = list()
     all_best_psl = 100
     logging.info("=========== CURRENT POPULATION ============ ")
     for i in range(len(population)):
@@ -135,7 +148,7 @@ def tournament(population):
                 # Если эта особь имеет подходящий нам БЛ:
                 # добавляем в список лучших
                 if fx_psl <= PSL_MAX:
-                    best_of_the_best.update({i: population[i]})
+                    best_of_the_best.append(population[i][:])
         next_population.append(population.pop(best_id))
     logging.info("=========== NEXT POPULATION ============ ")
     for i in range(len(next_population)):
@@ -149,11 +162,18 @@ def fitness_function(element):
     return function_info[1]
 
 
+def trim_array(array_for_trimming):
+    trimmed_array = list()
+    for i in range(len(array_for_trimming)):
+        if not trimmed_array.__contains__(array_for_trimming[i]):
+            trimmed_array.append(array_for_trimming[i])
+    return trimmed_array
+
 # Класс для формирования пар родителей
-class Pair:
-    def __init__(self, first_parent, second_parent):
-        self.first_parent = first_parent
-        self.second_parent = second_parent
+# class Pair:
+#     def __init__(self, first_parent, second_parent):
+#         self.first_parent = first_parent
+#         self.second_parent = second_parent
 
 
 if __name__ == '__main__':
