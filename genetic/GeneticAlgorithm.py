@@ -60,27 +60,12 @@ def make_pairs(parents):
         b = random()
         if b < Pk:
             pairs.append([first_parent, second_parent])
-    # logging.info("Pairs size: %d", len(pairs))
-    # logging.info("=========== PARENTS AFTER PARING ============ ")
-    # for i in range(len(parents)):
-    #     logging.info("PSL ======================= %d", fitness_function(parents[i]))
-    # logging.info("=========== THE END ============ ")
     return pairs
 
 
 # Скрещивание родителей
 def crossover(population):
     parents = make_pairs(population)
-    # logging.info("=========== POPULATION BEFORE CROSSOVER ============ ")
-    # for i in range(len(population)):
-    #     logging.info("PSL ======================= %d", fitness_function(population[i]))
-    # logging.info("=========== THE END ============ ")
-    #
-    # logging.info("=========== PAIRS BEFORE CROSSOVER ============ ")
-    # for i in range(len(parents)):
-    #     logging.info("PSL ======================= %d", fitness_function(parents[i][0]))
-    #     logging.info("PSL ======================= %d", fitness_function(parents[i][1]))
-    # logging.info("=========== THE END ============ ")
     children_list = list()
     for i in range(len(parents)):
         first_child = parents[i][0][:]
@@ -92,17 +77,6 @@ def crossover(population):
         children_list.append(first_child)
         children_list.append(second_child)
     logging.info("Children size: %d", len(children_list))
-
-    # logging.info("=========== POPULATION AFTER CROSSOVER ============ ")
-    # for i in range(len(population)):
-    #     logging.info("PSL ======================= %d", fitness_function(population[i]))
-    # logging.info("=========== THE END ============ ")
-    #
-    # logging.info("=========== PAIRS AFTER CROSSOVER ============ ")
-    # for i in range(len(parents)):
-    #     logging.info("PSL ======================= %d", fitness_function(parents[i][0]))
-    #     logging.info("PSL ======================= %d", fitness_function(parents[i][1]))
-    # logging.info("=========== THE END ============ ")
     return children_list
 
 
@@ -113,7 +87,8 @@ def mutate(children_array):
             index = randint(0, N - 1)
             temp_child = children_array[i][:]
             children_array[i][index] = -temp_child[index]
-            logging.info("Child with id %d and index %d was %d and now it's %d", i, index, -temp_child[index], temp_child[index])
+            logging.info("Child with id %d and index %d was %d and now it's %d", i, index, -temp_child[index],
+                         temp_child[index])
     return children_array
 
 
@@ -128,7 +103,7 @@ def tournament(population):
     best_id = 0
     logging.info("=========== CURRENT POPULATION BEFORE TOURNAMENT ============ ")
     for i in range(len(population)):
-        logging.info("PSL ======================= [%d] %d", i, N/fitness_function(population[i]))
+        logging.info("PSL ======================= [%d] %d", i, N / fitness_function(population[i]))
     logging.info("=========== THE END ============ ")
     while len(next_population) < P:
         best_id = -1
@@ -137,44 +112,45 @@ def tournament(population):
             # Получение значения функции приспособленности
             # для текущей особи в популяции
             ffx = fitness_function(population[i])
-            ffx_psl = N/ffx
+            ffx_psl = N / ffx
             # Находим наиболее приспособленную особь
             if ffx > best_fx:
                 best_id = i
                 best_fx = ffx
-                # Если эта особь имеет подходящий нам БЛ:
-                # добавляем в список лучших
             # temp
             if all_best_psl > ffx_psl:
                 all_best_psl = ffx_psl
             # Массив значений функции приспособленности текущей популяции
             # для отрисовки графика
-        best_psl = N/best_fx
+        best_psl = N / best_fx
+        # Если эта особь имеет подходящий нам БЛ:
+        # добавляем в список лучших
         if best_psl <= PSL_MAX:
             best_of_the_best.append(population[best_id][:])
         next_population.append(population.pop(best_id))
         fitness_array.append(best_fx)
-
-    logging.info("=========== NEXT POPULATION ============ ")
-    for i in range(len(next_population)):
-        logging.info("PSL ======================= %d", N/fitness_function(next_population[i]))
-    logging.info("=========== THE END ============ ")
-    # for i in range(len(psl_array)):
-    #     s
-    return [best_of_the_best, next_population, sum(fitness_array)/len(fitness_array), best_id, all_best_psl]
+    return [best_of_the_best, next_population, sum(fitness_array) / len(fitness_array), best_id, all_best_psl]
 
 
+# Получение значения функции приспособленности
 def fitness_function(element):
     function_info = function(element)
-    return N/function_info[1]
+    return N / function_info[1]
 
 
+# Удаление повторяющихся особей
 def trim_array(array_for_trimming):
     trimmed_array = list()
     for i in range(len(array_for_trimming)):
         if not trimmed_array.__contains__(array_for_trimming[i]):
             trimmed_array.append(array_for_trimming[i])
     return trimmed_array
+
+
+def create_report(reported_population):
+    print("Номер особи |  КП                                                                                                                                  | Значение PSL")
+    for i in range(len(reported_population)):
+        print(i, "          | ", reported_population[i], " | ", function(reported_population[i])[1])
 
 
 if __name__ == '__main__':
@@ -185,71 +161,58 @@ if __name__ == '__main__':
     best_r_array = list()
     average_psl_array = list()
     isFinished = False
+
+    # Информация для отчёта
+    first_population = list()
+    third_population = list()
+    last_population = list()
     while not isFinished:
         population_number = population_number + 1
-        # logging.info("=========== CURRENT POPULATION BEFORE CHILDREN ============ ")
-        # for i in range(len(current_population)):
-        #     logging.info("PSL ======================= [%d]: %d", i, fitness_function(current_population[i]))
-        # logging.info("=========== THE END ============ ")
-
         children = crossover(current_population)
-
-        #
-        # logging.info("=========== CHILDREN BEFORE MUTATION ============ ")
-        # for i in range(len(children)):
-        #     logging.info("PSL ======================= [%d]: %d", i, fitness_function(children[i]))
-        # logging.info("=========== THE END ============ ")
-
-        # mutated_children = mutate(children)
-
-        # logging.info("=========== MUTATED CHILDREN ============ ")
-        # for i in range(len(mutated_children)):
-        #     logging.info("PSL ======================= [%d]: %d", i, fitness_function(mutated_children[i]))
-        # logging.info("=========== THE END ============ ")
         current_population.extend(mutate(children))
-
-        # logging.info("=========== CURRENT POPULATION AFTER MUTATION ============ ")
-        # for i in range(len(current_population)):
-        #     logging.info("PSL ======================= [%d]: %d", i, fitness_function(current_population[i]))
-        # logging.info("=========== THE END ============ ")
-
         tournament_result = tournament(current_population)
-        # logging.info("=========== CURRENT POPULATION BEFORE MUTATION ============ ")
-        # for i in range(len(current_population)):
-        #     logging.info("PSL ======================= [%d]: %d", i, N/fitness_function(current_population[i]))
-        # logging.info("=========== THE END ============ ")
 
-        best_of_the_best_array = tournament_result[0]
+        best_of_the_best_array = tournament_result[0][:]
+        current_population = tournament_result[1][:]
         logging.info("Current best arrays size ======================= %d", len(best_of_the_best_array))
         logging.info("Current best PSL ======================= %d", tournament_result[4])
+
+        if population_number == 1:
+            first_population = current_population[:]
+        if population_number == 3:
+            third_population = current_population[:]
         if len(best_of_the_best_array) >= K:
-            best_array = current_population[tournament_result[3]]
+            best_array = current_population[tournament_result[3]][:]
+            last_population = current_population[:]
             isFinished = True
-        current_population = tournament_result[1]
         average_psl_array.append(tournament_result[2])
-        # plot
         logging.info("Population number: %d", population_number)
         logging.info("Average PSL: %d", tournament_result[2])
 
+    # Отрисовка графика зависимости
+    # значения PSL от номера популяции
     x = list()
     for k in range(population_number):
         x.append(k)
     plt.plot(x, average_psl_array)
     plt.show()
 
+    # Отрисовка графика АКФ
+    # для лучшей особи в популяции
     temp_best_r_array = function(best_array)[2]
     best_r_array = temp_best_r_array[:]
     for i in range(len(temp_best_r_array) - 2, -1, -1):
         best_r_array.append(temp_best_r_array[i])
-
     x = list()
     for i in range(-N + 1, N):
         x.append(i)
     plt.plot(x, best_r_array)
     plt.show()
-    # test_array = [-1, 1, -1, -1, 1, 1, 1]
-    # function(test_array)
-    # gen_array = generate_population()
-    # print(len(gen_array))
-    # pair_array = make_pairs(gen_array)
-    # print(len(pair_array))
+
+    # Создание отчёетов
+    print("Первая популяция")
+    create_report(first_population)
+    print("Третья популяция")
+    create_report(third_population)
+    print("Последняя популяция")
+    create_report(last_population)
